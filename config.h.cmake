@@ -1,1 +1,4 @@
 #cmakedefine HAVE_NETROOTINFO2_CURRENTDESKTOPFORSCREEN 1
+#cmakedefine KOR_DESKTOPS 1
+#cmakedefine KOR_MINICLI 1
+#cmakedefine KOR_PANELS 1

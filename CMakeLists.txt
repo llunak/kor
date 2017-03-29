@@ -2,6 +2,10 @@ cmake_minimum_required( VERSION 2.6 )
 
 project( kor )
 
+option( KOR_DESKTOPS "Build Kor support for desktop background" ON )
+option( KOR_MINICLI "Build Kor support for mini command line" ON )
+option( KOR_PANELS "Build Kor support for panels" ON )
+
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH} )
 
 find_package( KDE4 REQUIRED )
@@ -25,12 +29,21 @@ configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h )
 
 include_directories(
     ${CMAKE_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/desktop
-    ${CMAKE_SOURCE_DIR}/minicli
-    ${CMAKE_SOURCE_DIR}/panels
     ${CMAKE_SOURCE_DIR}/utils
     ${CMAKE_BINARY_DIR}
     )
+
+if(KOR_DESKTOPS)
+include_directories( ${CMAKE_SOURCE_DIR}/desktop )
+endif(KOR_DESKTOPS)
+
+if(KOR_MINICLI)
+include_directories( ${CMAKE_SOURCE_DIR}/minicli )
+endif(KOR_MINICLI)
+
+if(KOR_PANELS)
+include_directories( ${CMAKE_SOURCE_DIR}/panels )
+endif(KOR_PANELS)
 
 ########### next target ###############
 
@@ -38,38 +51,52 @@ set( kor_SRCS
      main.cpp
      application.cpp
      startupsuspendhandler.cpp
+     )
+
+if(KOR_DESKTOPS)
+set( kor_SRCS ${kor_SRCS}
      desktop/desktop.cpp
      desktop/plasmawallpaper.cpp
      desktop/wallpaper.cpp
+     utils/x11utils.cpp
+     )
+endif(KOR_PANELS)
+
+if(KOR_MINICLI)
+set( kor_SRCS ${kor_SRCS}
      minicli/minicli.cpp
      minicli/miniclidialog.cpp
      minicli/miniclihandler.cpp
+     )
+kde4_add_ui_files( kor_SRCS
+    minicli/miniclidialog.ui
+    )
+set( kor_KCFGC_FILES ${kor_KCFGC_FILES}
+     minicli/minicliconfig.kcfgc
+     minicli/miniclidialogconfig.kcfgc
+     )
+endif(KOR_MINICLI)
+
+if(KOR_PANELS)
+set( kor_SRCS ${kor_SRCS}
      panels/applet.cpp
      panels/panel.cpp
      panels/spacer.cpp
      panels/clock/clock.cpp
      panels/hello/hello.cpp
      panels/plasma/plasmaapplet.cpp
-     utils/x11utils.cpp
      )
-
 if(HAVE_NETROOTINFO2_CURRENTDESKTOPFORSCREEN)
 set( kor_SRCS ${kor_SRCS}
      panels/desktopsonscreens/desktopsonscreens.cpp
      )
 endif(HAVE_NETROOTINFO2_CURRENTDESKTOPFORSCREEN)
-
-kde4_add_ui_files( kor_SRCS
-    minicli/miniclidialog.ui
-    )
-
-set( kor_KCFGC_FILES
-     minicli/minicliconfig.kcfgc
-     minicli/miniclidialogconfig.kcfgc
+set( kor_KCFGC_FILES ${kor_KCFGC_FILES}
      panels/clock/clockconfig.kcfgc
      panels/hello/helloconfig.kcfgc
      panels/plasma/plasmaappletconfig.kcfgc
      )
+endif(KOR_PANELS)
 
 kde4_add_kcfg_files( kor_SRCS ${kor_KCFGC_FILES} )
 foreach( kcfgc ${kor_KCFGC_FILES} )
@@ -100,6 +127,7 @@ install( FILES korrc DESTINATION ${CONFIG_INSTALL_DIR} )
 
 ########### next target ###############
 
+if(KOR_PANELS)
 kde4_add_plugin(plasma_containment_korinternal panels/plasma/plasmacontainment.cpp)
 if( KDE4_PLASMA_LIBS )
     target_link_libraries(plasma_containment_korinternal ${KDE4_PLASMA_LIBS})
@@ -109,3 +137,4 @@ endif( KDE4_PLASMA_LIBS )
 
 install(TARGETS plasma_containment_korinternal DESTINATION ${PLUGIN_INSTALL_DIR})
 install(FILES panels/plasma/plasma-containment-korinternal.desktop DESTINATION ${SERVICES_INSTALL_DIR})
+endif(KOR_PANELS)

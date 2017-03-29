@@ -15,11 +15,21 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *********************************************************************/
 
+#include <config.h>
+
 #include "application.h"
 
+#ifdef KOR_DESKTOPS
 #include "desktop.h"
+#endif
+#ifdef KOR_MINICLI
 #include "minicli.h"
+#endif
+#ifdef KOR_PANELS
 #include "panel.h"
+#endif
+
+#include <kconfiggroup.h>
 
 namespace Kor
 {
@@ -27,12 +37,18 @@ namespace Kor
 Application::Application()
     {
     KConfigGroup cfg( KGlobal::config(), "Layout" );
+#ifdef KOR_MINICLI
     if( cfg.readEntry( "Minicli", true ))
         objects.append( new Minicli( this ));
+#endif
+#ifdef KOR_PANELS
     foreach( const QString& panelid, cfg.readEntry( "Panels", QStringList()))
         objects.append( new Panel( panelid, this ));
+#endif
+#ifdef KOR_DESKTOPS
     foreach( const QString& desktopid, cfg.readEntry( "Desktops", QStringList()))
         objects.append( new Desktop( desktopid, this ));
+#endif
     setQuitOnLastWindowClosed( false );
     }
 

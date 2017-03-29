@@ -21,8 +21,6 @@
 #include <kuniqueapplication.h>
 #include <qscopedpointer.h>
 
-#include "minicli.h"
-
 namespace Kor
 {
 
