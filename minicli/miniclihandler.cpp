@@ -18,12 +18,13 @@
 #include "miniclihandler.h"
 
 #include <kauthorized.h>
+#include <klocalizedstring.h>
 #include <kprocess.h>
 #include <krun.h>
 #include <kservice.h>
 #include <kshell.h>
 #include <kstandarddirs.h>
-#include <kworkspace/kworkspace.h>
+#include <kurl.h>
 #include <qfile.h>
 #include <qtextdocument.h>
 #include <qtextstream.h>
@@ -127,30 +128,11 @@ MinicliHandler::HandledState MinicliHandlerCommandUrl::update( const QString& co
         case KUriFilterData::LocalFile:
         case KUriFilterData::LocalDir:
         case KUriFilterData::NetProtocol:
-#if KDE_IS_VERSION( 4, 6, 0 )
         case KUriFilterData::Executable:
-#endif
         case KUriFilterData::Help:
         case KUriFilterData::Shell:
             *iconName = data.iconName();
             return HandledOk;
-#if ! KDE_IS_VERSION( 4, 6, 0 )
-// workarounds for KUriFilter bugs
-        case KUriFilterData::Executable:
-            {
-            QString exeName = data.uri().path();
-            exeName = exeName.mid( exeName.lastIndexOf( '/' ) + 1 ); // strip path if given
-            KService::Ptr service = KService::serviceByDesktopName( exeName );
-            if (service && service->icon() != QLatin1String( "unknown" ))
-                *iconName = service->icon();
-            else if ( !KIconLoader::global()->iconPath( exeName, KIconLoader::NoGroup, true ).isNull() )
-                *iconName = exeName;
-            else
-                // not found, use default
-                *iconName = QLatin1String("system-run");
-            return HandledOk;
-            }
-#endif
         case KUriFilterData::Error:
             *iconName = "dialog-error";
             return HandledFailed;
@@ -179,7 +161,8 @@ KService::Ptr MinicliHandlerCommandUrl::findService( const QString& cmd )
     KService::Ptr service = KService::serviceByDesktopName( cmd );
     if( service && service->isValid() && service->isApplication())
         return service;
-    service = KService::serviceByName( cmd );
+#warning serviceByName()
+    service = KService::serviceByStorageId( cmd );
     if( service && service->isValid() && service->isApplication())
         return service;
     return KService::Ptr();
@@ -187,6 +170,7 @@ KService::Ptr MinicliHandlerCommandUrl::findService( const QString& cmd )
 
 MinicliHandler::HandledState MinicliHandlerSpecials::run( const QString& command, QWidget*, QString* error )
     {
+#if 0 // TODO?
     if( command == "logout" )
         {
         KWorkSpace::propagateSessionManager();
@@ -199,6 +183,7 @@ MinicliHandler::HandledState MinicliHandlerSpecials::run( const QString& command
 #endif
         return HandledOk;
         }
+#endif
     return NotHandled;
     }
 

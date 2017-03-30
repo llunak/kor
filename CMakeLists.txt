@@ -1,31 +1,43 @@
-cmake_minimum_required( VERSION 2.6 )
+cmake_minimum_required( VERSION 2.8.12 FATAL_ERROR )
 
 project( kor )
 
-option( KOR_DESKTOPS "Build Kor support for desktop background" ON )
+option( KOR_DESKTOPS "Build Kor support for desktop background" OFF )
 option( KOR_MINICLI "Build Kor support for mini command line" ON )
-option( KOR_PANELS "Build Kor support for panels" ON )
+option( KOR_PANELS "Build Kor support for panels" OFF )
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH} )
+find_package(ECM 1.1.0 REQUIRED NO_MODULE)
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
 
-find_package( KDE4 REQUIRED )
-# older KDE versions do not have this cmake module
-# find_package( KDE4Workspace REQUIRED )
-find_path( KDE4WORKSPACE_INCLUDE_DIR NAMES kworkspace/kworkspace.h PATHS ${KDE4_INCLUDES} )
-find_library( KDE4WORKSPACE_KWORKSPACE_LIBS NAMES kworkspace PATHS ${KDE4_LIB_DIR} )
-include( FindPackageHandleStandardArgs )
-find_package_handle_standard_args( KDE4Workspace DEFAULT_MSG KDE4WORKSPACE_KWORKSPACE_LIBS KDE4WORKSPACE_INCLUDE_DIR )
-if( NOT KDE4WORKSPACE_FOUND )
-    message( FATAL_ERROR "KDE Workspace development files not found." )
-endif( NOT KDE4WORKSPACE_FOUND )
+include(KDEInstallDirs)
+include(KDECMakeSettings)
+include(KDECompilerSettings NO_POLICY_SCOPE)
+include(ECMPackageConfigHelpers)
 
-include( MacroLibrary )
-include( KDE4Defaults )
-add_definitions( ${QT_DEFINITIONS} ${KDE4_DEFINITIONS} -DHAVE_CONFIG_H=1 )
-include_directories( ${KDE4_INCLUDES} ${KDE4WORKSPACE_INCLUDE_DIR} )
+set(QT_MIN_VERSION "5.5.0")
+find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
+    Core
+    Widgets
+)
 
-include(CheckNetRootInfo2CurrentDesktopForScreen)
-configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h )
+set(KF5_MIN_VERSION "5.24.0")
+find_package(KF5 REQUIRED COMPONENTS
+    Config
+    CoreAddons
+    GlobalAccel
+    I18n
+    Init
+    Service
+    KDELibs4Support
+)
+
+# Set KI18n translation domain
+add_definitions(-DTRANSLATION_DOMAIN=\"kor\")
+
+feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
+
+########### next target ###############
 
 include_directories(
     ${CMAKE_SOURCE_DIR}
@@ -50,7 +62,7 @@ endif(KOR_PANELS)
 set( kor_SRCS
      main.cpp
      application.cpp
-     startupsuspendhandler.cpp
+#     startupsuspendhandler.cpp
      )
 
 if(KOR_DESKTOPS)
@@ -60,7 +72,7 @@ set( kor_SRCS ${kor_SRCS}
      desktop/wallpaper.cpp
      utils/x11utils.cpp
      )
-endif(KOR_PANELS)
+endif(KOR_DESKTOPS)
 
 if(KOR_MINICLI)
 set( kor_SRCS ${kor_SRCS}
@@ -68,7 +80,7 @@ set( kor_SRCS ${kor_SRCS}
      minicli/miniclidialog.cpp
      minicli/miniclihandler.cpp
      )
-kde4_add_ui_files( kor_SRCS
+ki18n_wrap_ui( kor_SRCS
     minicli/miniclidialog.ui
     )
 set( kor_KCFGC_FILES ${kor_KCFGC_FILES}
@@ -98,26 +110,21 @@ set( kor_KCFGC_FILES ${kor_KCFGC_FILES}
      )
 endif(KOR_PANELS)
 
-kde4_add_kcfg_files( kor_SRCS ${kor_KCFGC_FILES} )
+kconfig_add_kcfg_files( kor_SRCS ${kor_KCFGC_FILES} )
 foreach( kcfgc ${kor_KCFGC_FILES} )
     get_filename_component( kcfgc_path ${kcfgc} PATH )
     get_filename_component( kcfgc_name ${kcfgc} NAME_WE )
     set( kor_KCFG_FILES ${kor_KCFG_FILES} ${kcfgc_path}/${kcfgc_name}.kcfg )
 endforeach( kcfgc ${kor_KCFGC_FILES} )
 
-kde4_add_kdeinit_executable( kor ${kor_SRCS} )
+kf5_add_kdeinit_executable( kor ${kor_SRCS} )
 target_link_libraries( kdeinit_kor
-    ${KDE4_KIO_LIBS}
-    ${KDE4WORKSPACE_KWORKSPACE_LIBS}
-    ${X11_LIBRARIES})
-if( KDE4_PLASMA_LIBS )
-    target_link_libraries( kdeinit_kor ${KDE4_PLASMA_LIBS} )
-else( KDE4_PLASMA_LIBS )
-    target_link_libraries( kdeinit_kor plasma )
-endif( KDE4_PLASMA_LIBS )
-
-# for plasma systray workaround
-target_link_libraries( kdeinit_kor ${X11_Xrender_LIB} )
+    Qt5::Widgets
+    KF5::ConfigCore
+    KF5::GlobalAccel
+    KF5::Service
+    KF5::KDELibs4Support
+    )
 
 install( TARGETS kor ${INSTALL_TARGETS_DEFAULT_ARGS})
 install( TARGETS kdeinit_kor ${INSTALL_TARGETS_DEFAULT_ARGS})

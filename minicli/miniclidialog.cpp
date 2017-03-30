@@ -18,7 +18,10 @@
 #include "miniclidialog.h"
 
 #include <kcompletionbox.h>
+#include <kglobal.h>
 #include <kglobalsettings.h>
+#include <kicon.h>
+#include <kiconloader.h>
 #include <klocale.h>
 #include <kmessagebox.h>
 #include <kwindowsystem.h>
@@ -128,7 +131,7 @@ void MinicliDialog::readConfig()
     ui.command->completionObject()->setItems(
         config.completionItems().isEmpty() ? config.history() : config.completionItems());
     ui.command->completionObject()->setCompletionMode(
-        static_cast< KGlobalSettings::Completion >( config.completionMode()));
+        static_cast< KCompletion::CompletionMode >( config.completionMode()));
     KDialog::restoreDialogSize( KConfigGroup( KGlobal::config(), config.currentGroup() + "DialogSize" ));
     }
 

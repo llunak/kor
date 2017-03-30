@@ -18,9 +18,9 @@
 #include "minicli.h"
 
 #include <assert.h>
-#include <kaction.h>
 #include <kactioncollection.h>
 #include <kauthorized.h>
+#include <kglobalaccel.h>
 #include <klocale.h>
 
 #include <kdebug.h>
@@ -41,10 +41,10 @@ Minicli::Minicli( QObject* parent )
     minicli_ptr = this;
     dialog = new MinicliDialog( this );
     KActionCollection* actions = new KActionCollection( this );
-    KAction* action = actions->addAction( "showruncommand" );
+    QAction* action = actions->addAction( "showruncommand" );
     action->setText( i18n( "Show run command dialog" ));
-    action->setGlobalShortcut( KShortcut( Qt::ALT + Qt::Key_F5 ));
-    connect( action, SIGNAL( triggered( bool )), this, SLOT( showDialog()));
+    KGlobalAccel::setGlobalShortcut( action, QKeySequence( Qt::ALT + Qt::Key_F5 ));
+    connect( action, SIGNAL( triggered()), this, SLOT( showDialog()));
 
     connect( &updateTimer, SIGNAL( timeout()), this, SLOT( doUpdate()));
     updateTimer.setSingleShot( true );

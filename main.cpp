@@ -17,19 +17,19 @@
 
 #include "main.h"
 
-#include <kaboutdata.h>
+#include <k4aboutdata.h>
 #include <kcmdlineargs.h>
 #include <klocale.h>
 #include <stdio.h>
 
 #include "application.h"
-#include "startupsuspendhandler.h"
+//#include "startupsuspendhandler.h"
 
-extern "C" KDE_EXPORT
+extern "C" Q_DECL_EXPORT
 int kdemain( int argc, char* argv[] )
     {
-    KAboutData about( "kor", NULL, ki18n( "Kor Testudo Shell" ), KOR_VERSION );
-    about.setLicense( KAboutData::License_GPL );
+    K4AboutData about( "kor", NULL, ki18n( "Kor Testudo Shell" ), KOR_VERSION );
+    about.setLicense( K4AboutData::License_GPL );
     about.addAuthor( ki18n( "Luboš Luňák" ), KLocalizedString(), "l.lunak@kde.org" );
     // HACK there's no catalog for Kor right now, without a default catalog nothing is translated
     about.setCatalogName( "kdelibs4" );
@@ -39,15 +39,15 @@ int kdemain( int argc, char* argv[] )
         fprintf( stderr, "Kor is already running." );
         return 0;
         }
-    Kor::StartupSuspendHandler::self()->suspend( NULL ); // main suspend
+//    Kor::StartupSuspendHandler::self()->suspend( NULL ); // main suspend
 #if QT_VERSION >= 0x040500
     QApplication::setGraphicsSystem( "native" ); // TODO
 #endif
     Kor::Application app;
     app.disableSessionManagement(); // Do SM, but don't restart.
 #ifndef NDEBUG
-    Kor::StartupSuspendHandler::self()->startCheck();
+//    Kor::StartupSuspendHandler::self()->startCheck();
 #endif
-    Kor::StartupSuspendHandler::self()->resume( NULL ); // main resume, will wait for others if there are any
+//    Kor::StartupSuspendHandler::self()->resume( NULL ); // main resume, will wait for others if there are any
     return app.exec();
     }

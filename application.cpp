@@ -30,6 +30,7 @@
 #endif
 
 #include <kconfiggroup.h>
+#include <kglobal.h>
 
 namespace Kor
 {
