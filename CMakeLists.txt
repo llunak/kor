@@ -37,6 +37,8 @@ add_definitions(-DTRANSLATION_DOMAIN=\"kor\")
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
+configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h )
+
 ########### next target ###############
 
 include_directories(
